@@ -87,6 +87,9 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, UserDO> implements 
         }
     }
 
+    /*
+    * 更新用户信息
+    * */
     @Override
     public void update(UserUpdateReqDTO updateParam) {
         // TODO 验证当前用户名是否为登录用户
@@ -98,6 +101,9 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, UserDO> implements 
         baseMapper.update(BeanUtil.toBean(updateParam, UserDO.class), eq);
     }
 
+    /*
+    * 用户登录
+    * */
     @Override
     public UserLoginRespDTO login(UserLoginReqDTO loginParam) {
         LambdaQueryWrapper<UserDO> eq = Wrappers.lambdaQuery(UserDO.class)
@@ -121,15 +127,21 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, UserDO> implements 
         * */
         String uuid = UUID.randomUUID().toString();
         stringRedisTemplate.opsForHash().put("login_"+loginParam.getUsername(), uuid, JSON.toJSONString(userDO));
-        stringRedisTemplate.expire("login_"+loginParam.getUsername(),30L, TimeUnit.MINUTES);
+        stringRedisTemplate.expire("login_"+loginParam.getUsername(),30L, TimeUnit.DAYS);
         return new UserLoginRespDTO(uuid);
     }
 
+    /*
+    * 检查用户是否登录
+    * */
     @Override
     public Boolean checkLogin(String username, String token) {
         return stringRedisTemplate.opsForHash().get("login_" + username, token) !=null;
     }
 
+    /*
+    * 用户退出登录
+    * */
     @Override
     public void logout(String username, String token) {
         if (checkLogin(username, token)){
