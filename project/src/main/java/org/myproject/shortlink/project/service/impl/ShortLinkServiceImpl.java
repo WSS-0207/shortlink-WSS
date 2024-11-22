@@ -1,35 +1,80 @@
 package org.myproject.shortlink.project.service.impl;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.myproject.shortlink.project.common.convention.exception.ClientException;
 import org.myproject.shortlink.project.dao.entity.ShortLinkDO;
 import org.myproject.shortlink.project.dao.mapper.ShortLinkMapper;
 import org.myproject.shortlink.project.dto.req.ShortLinkCreateReqDTO;
 import org.myproject.shortlink.project.dto.resp.ShortLinkCreateRespDTO;
 import org.myproject.shortlink.project.service.ShortLinkService;
 import org.myproject.shortlink.project.util.HashUtil;
+import org.redisson.api.RBloomFilter;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Service;
 
 @Slf4j
 @Service
+@RequiredArgsConstructor
 public class ShortLinkServiceImpl extends ServiceImpl<ShortLinkMapper, ShortLinkDO> implements ShortLinkService {
+
+    private final RBloomFilter<String> shortLinkCachePenetrationBloomFilter;
+
     @Override
     public ShortLinkCreateRespDTO createShortLink(ShortLinkCreateReqDTO requestParam) {
         String shortUrl = generateShortUrl(requestParam);
-        ShortLinkDO shortLinkDO = new ShortLinkDO();
-        shortLinkDO.setShortUrl(shortUrl);
-        shortLinkDO.setEnableStatus(0);
-        shortLinkDO.setFullShortUrl(requestParam.getDomain()+"/"+shortUrl);
-        baseMapper.insert(shortLinkDO);
+        String fullUrl = new StringBuilder()
+                .append(requestParam.getDomain())
+                .append("/")
+                .append(shortUrl).toString();
+        ShortLinkDO build = ShortLinkDO.builder()
+                .fullShortUrl(fullUrl)
+                .originUrl(requestParam.getOriginUrl())
+                .gid(requestParam.getGid())
+                .shortUrl(shortUrl)
+                .describe(requestParam.getDescribe())
+                .domain(requestParam.getDomain())
+                .validData(requestParam.getValidData())
+                .createType(requestParam.getCreateType())
+                .enableStatus(0)
+                .build();
+        try {
+            baseMapper.insert(build);
+        } catch (DuplicateKeyException e) {
+            LambdaQueryWrapper<ShortLinkDO> eq = Wrappers.lambdaQuery(ShortLinkDO.class)
+                    .eq(ShortLinkDO::getShortUrl, shortUrl);
+            ShortLinkDO shortLinkDO = baseMapper.selectOne(eq);
+            if (shortLinkDO != null) {
+                log.error("短连接{}重复，请更换短连接", fullUrl);
+                throw new ClientException("短连接重复，请更换短连接");
+            }
+        }
+        shortLinkCachePenetrationBloomFilter.add(shortUrl);
+
         return ShortLinkCreateRespDTO.builder()
-                .fullShortUrl(shortLinkDO.getFullShortUrl())
+                .fullShortUrl(build.getFullShortUrl())
                 .originUrl(requestParam.getOriginUrl())
                 .gid(requestParam.getGid())
                 .build();
     }
 
     public String generateShortUrl(ShortLinkCreateReqDTO requestParam) {
+        int cnt = 0;
         String originUrl = requestParam.getOriginUrl();
+        String shortUrl;
+        while (true) {
+            if (cnt > 10) {
+                throw new ClientException("短连接生成频繁，请稍后再试");
+            }
+            shortUrl = HashUtil.hashToBase62(originUrl + System.currentTimeMillis());
+            if (!shortLinkCachePenetrationBloomFilter.contains(shortUrl)) {
+                break;
+            }
+            cnt++;
+        }
         return HashUtil.hashToBase62(originUrl);
     }
 }
