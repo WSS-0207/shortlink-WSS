@@ -14,9 +14,31 @@ public class UserTableShardingTest {
             "`del_flag` tinyint(1) DEFAULT NULL COMMENT '删除标识 0：未删除 1：已删除'," +
             "PRIMARY KEY (`id`)" +
             ") ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;";
+
+    public static final String LINK_SQL = "CREATE TABLE `t_link_%d` (" +
+            "`id` bigint(20) NOT NULL COMMENT 'ID'," +
+            "`domain` varchar(128) DEFAULT NULL," +
+            "`short_url` varchar(8) DEFAULT NULL,   " +
+            "`full_short_url` varchar(128) DEFAULT NULL," +
+            "`origin_url` varchar(1024) DEFAULT NULL," +
+            "`click_num` int(11) unsigned zerofill DEFAULT NULL," +
+            "`gid` varchar(32) DEFAULT NULL," +
+            "`favicon` varchar(255) DEFAULT NULL COMMENT '网站标识图片地址',          " +
+            "`enable_status` tinyint(1) DEFAULT NULL," +
+            "`create_type` tinyint(1) DEFAULT NULL, " +
+            "`valid_data_type` tinyint(1) DEFAULT NULL, " +
+            "`valid_data` datetime DEFAULT NULL, " +
+            "`describe` varchar(1024) DEFAULT NULL, " +
+            "`create_time` datetime DEFAULT NULL COMMENT '创建时间', " +
+            "`update_time` datetime DEFAULT NULL COMMENT '修改时间', " +
+            "`del_flag` tinyint(1) DEFAULT NULL COMMENT '删除标识 0：未删除 1：已删除'," +
+            "PRIMARY KEY (`id`) USING BTREE, " +
+            "UNIQUE KEY `idx_unique_full_short` (`full_short_url`) USING BTREE" +
+            ") ENGINE=InnoDB DEFAULT CHARSET=latin1 ROW_FORMAT=DYNAMIC;";
+
     public static void main(String[] args) {
         for (int i = 0; i < 16; i++) {
-            System.out.println(String.format(SQL,i));
+            System.out.println(String.format(LINK_SQL, i));
         }
     }
 }
