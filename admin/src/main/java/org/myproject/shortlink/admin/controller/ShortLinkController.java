@@ -2,7 +2,7 @@ package org.myproject.shortlink.admin.controller;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import org.myproject.shortlink.admin.common.convention.result.Result;
-import org.myproject.shortlink.admin.remote.dto.ShortLinkService;
+import org.myproject.shortlink.admin.remote.ShortLinkService;
 import org.myproject.shortlink.admin.remote.dto.req.ShortLinkCreateReqDTO;
 import org.myproject.shortlink.admin.remote.dto.req.ShortLinkPageReqDTO;
 import org.myproject.shortlink.admin.remote.dto.resp.ShortLinkCreateRespDTO;
@@ -29,4 +29,9 @@ public class ShortLinkController {
     public Result<IPage<ShortLinkPageRespDTO>> pageShortLink(ShortLinkPageReqDTO requestParam){
         return shortLinkService.pageShortLink(requestParam);
     }
+
+//    @GetMapping("/api/short-link/admin/v1/count-short-link")
+//    public Result<ShortLinkCountQueryRespDTO> countShortLink(@RequestParam("requestParam") List<String> requestParam){
+//        return shortLinkService.countShortLink(requestParam);
+//    }
 }

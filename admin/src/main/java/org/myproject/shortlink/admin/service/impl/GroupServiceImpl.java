@@ -6,20 +6,26 @@ import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.myproject.shortlink.admin.common.biz.user.UserContext;
+import org.myproject.shortlink.admin.common.convention.result.Result;
 import org.myproject.shortlink.admin.dao.entity.GroupDO;
 import org.myproject.shortlink.admin.dao.mapper.GroupMapper;
 import org.myproject.shortlink.admin.dto.req.GroupReqDTO;
 import org.myproject.shortlink.admin.dto.req.GroupSortReqDTO;
 import org.myproject.shortlink.admin.dto.req.GroupUpdateReqDTO;
 import org.myproject.shortlink.admin.dto.resp.GroupRespDTO;
+import org.myproject.shortlink.admin.remote.ShortLinkService;
+import org.myproject.shortlink.admin.remote.dto.resp.ShortLinkCountQueryRespDTO;
 import org.myproject.shortlink.admin.service.GroupService;
 import org.myproject.shortlink.admin.util.GroupIdGenerator;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 
 @Service
 public class GroupServiceImpl extends ServiceImpl<GroupMapper, GroupDO>  implements GroupService {
+    ShortLinkService shortLinkService = new ShortLinkService() {};
     /*
     * 新增分组
     * */
@@ -49,7 +55,16 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, GroupDO>  impleme
                 .eq(GroupDO::getUsername, UserContext.getUsername())
                 .orderByDesc(GroupDO::getSortOrder, GroupDO::getUpdateTime);
         List<GroupDO> groupDOS = baseMapper.selectList(eq);
-        return BeanUtil.copyToList(groupDOS, GroupRespDTO.class);
+        Result<List<ShortLinkCountQueryRespDTO>> shortLinkCountResult = shortLinkService
+                .countShortLink(groupDOS.stream().map(GroupDO::getGid).toList());
+        List<GroupRespDTO> shortLinkGroup = BeanUtil.copyToList(groupDOS,GroupRespDTO.class);
+        shortLinkGroup.forEach(each->{
+            Optional<ShortLinkCountQueryRespDTO> first = shortLinkCountResult.getData().stream()
+                    .filter(item -> Objects.equals(item.getGid(), each.getGid()))
+                    .findFirst();
+            first.ifPresent(item->each.setShortLinkCount(first.get().getShortLinkCount()));
+        });
+        return shortLinkGroup;
     }
 
     @Override
