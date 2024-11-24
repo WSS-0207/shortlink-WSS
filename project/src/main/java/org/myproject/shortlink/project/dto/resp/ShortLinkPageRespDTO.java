@@ -50,7 +50,6 @@ public class ShortLinkPageRespDTO {
     /**
     * valid_data_type
     */
-    @JsonFormat(pattern="YYYY-MM-dd HH:mm:ss",timezone="GMT+8")
     private Integer validDateType;
 
 

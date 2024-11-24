@@ -19,7 +19,7 @@ public class GroupController {
     private final GroupService groupService;
 
     /*
-    *
+    * 创建分组
     * */
     @PostMapping("/api/shortlink/admin/v1/group")
     public Result<Void> saveGroup(@RequestBody GroupReqDTO groupParam) {
