@@ -1,4 +1,4 @@
-package org.myproject.shortlink.project.dto.resp;
+package org.myproject.shortlink.admin.remote.dto.resp;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
@@ -50,20 +50,20 @@ public class ShortLinkPageRespDTO {
     /**
     * valid_data_type
     */
-    @JsonFormat(pattern="YYYY-MM-dd HH:mm:ss",timezone="GMT+8")
+    @JsonFormat(pattern="yyyy-MM-dd HH:mm:ss",timezone="GMT+8")
     private Integer validDateType;
 
 
     /**
     * valid_data
     */
-    @JsonFormat(pattern="YYYY-MM-dd HH:mm:ss",timezone="GMT+8")
+    @JsonFormat(pattern="yyyy-MM-dd HH:mm:ss",timezone="GMT+8")
     private Date validDate;
 
-    /**
+    /*
     * 创建时间
     * */
-    @JsonFormat(pattern="YYYY-MM-dd HH:mm:ss",timezone="GMT+8")
+    @JsonFormat(pattern="yyyy-MM-dd HH:mm:ss",timezone="GMT+8")
     private Date createTime;
 
     /**

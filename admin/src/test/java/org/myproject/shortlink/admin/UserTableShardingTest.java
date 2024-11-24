@@ -26,8 +26,8 @@ public class UserTableShardingTest {
             "`favicon` varchar(255) DEFAULT NULL COMMENT '网站标识图片地址',          " +
             "`enable_status` tinyint(1) DEFAULT NULL," +
             "`create_type` tinyint(1) DEFAULT NULL, " +
-            "`valid_data_type` tinyint(1) DEFAULT NULL, " +
-            "`valid_data` datetime DEFAULT NULL, " +
+            "`valid_date_type` tinyint(1) DEFAULT NULL, " +
+            "`valid_date` datetime DEFAULT NULL, " +
             "`describe` varchar(1024) DEFAULT NULL, " +
             "`create_time` datetime DEFAULT NULL COMMENT '创建时间', " +
             "`update_time` datetime DEFAULT NULL COMMENT '修改时间', " +

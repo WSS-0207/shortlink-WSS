@@ -1,11 +1,11 @@
-package org.myproject.shortlink.project.dto.req;
+package org.myproject.shortlink.admin.remote.dto.req;
 
 import lombok.Data;
 
 import java.util.Date;
 
 @Data
-public class ShortLinkCreateReqDTO{
+public class ShortLinkCreateReqDTO {
     /**
     * domain
     */

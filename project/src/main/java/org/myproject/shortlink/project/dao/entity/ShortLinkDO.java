@@ -69,12 +69,12 @@ public class ShortLinkDO extends BaseDO {
     /**
     * valid_data_type
     */
-    private Integer validDataType;
+    private Integer validDateType;
 
     /**
     * valid_data
     */
-    private Date validData;
+    private Date validDate;
 
     /**
     * describe

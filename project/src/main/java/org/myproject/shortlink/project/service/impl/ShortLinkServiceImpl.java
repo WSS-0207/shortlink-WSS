@@ -41,9 +41,8 @@ public class ShortLinkServiceImpl extends ServiceImpl<ShortLinkMapper, ShortLink
                 .shortUrl(shortUrl)
                 .describe(requestParam.getDescribe())
                 .domain(requestParam.getDomain())
-                .validData(requestParam.getValidData())
                 .createType(requestParam.getCreateType())
-                .validDataType(requestParam.getValidDataType())
+                .validDateType(requestParam.getValidDateType())
                 .enableStatus(0)
                 .build();
         try {
