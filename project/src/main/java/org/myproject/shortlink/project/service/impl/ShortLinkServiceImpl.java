@@ -128,7 +128,7 @@ public class ShortLinkServiceImpl extends ServiceImpl<ShortLinkMapper, ShortLink
                     .eq(ShortLinkDO::getEnableStatus, 0)
                     .eq(ShortLinkDO::getDelFlag, 0)
                     .set(Objects.equals(requestParam.getValidDateType(), VailDateTypeEnum.PERMANERNT.getType())
-                            , ShortLinkDO::getValidDate, requestParam.getValidDate());
+                            , ShortLinkDO::getValidDate, null);
             baseMapper.update(build, set);
         }else {
             LambdaUpdateWrapper<ShortLinkDO> set = Wrappers.lambdaUpdate(ShortLinkDO.class)
@@ -139,7 +139,6 @@ public class ShortLinkServiceImpl extends ServiceImpl<ShortLinkMapper, ShortLink
             baseMapper.delete(set);
             baseMapper.insert(build);
         }
-
     }
 
     public String generateShortUrl(ShortLinkCreateReqDTO requestParam) {
