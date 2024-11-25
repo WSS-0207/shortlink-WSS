@@ -42,6 +42,7 @@ import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
 import static org.myproject.shortlink.project.common.constant.RedisKeyConstant.*;
+import static org.myproject.shortlink.project.util.LinkUtil.getLinkCacheValidTime;
 
 @Slf4j
 @Service
@@ -90,6 +91,11 @@ public class ShortLinkServiceImpl extends ServiceImpl<ShortLinkMapper, ShortLink
                 throw new ClientException("短连接重复，请更换短连接");
             }
         }
+        //缓存预热
+        stringRedisTemplate.opsForValue().set(
+                fullUrl,
+                requestParam.getOriginUrl(),
+                getLinkCacheValidTime(requestParam.getValidDate()),TimeUnit.MINUTES);
         shortLinkCachePenetrationBloomFilter.add(fullUrl);
 
         return ShortLinkCreateRespDTO.builder()
