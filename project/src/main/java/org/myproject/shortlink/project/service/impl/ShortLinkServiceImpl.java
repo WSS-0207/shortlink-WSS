@@ -14,6 +14,9 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
 import org.myproject.shortlink.project.common.convention.exception.ClientException;
 import org.myproject.shortlink.project.common.enums.VailDateTypeEnum;
 import org.myproject.shortlink.project.dao.entity.ShortLinkDO;
@@ -36,6 +39,8 @@ import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -73,6 +78,7 @@ public class ShortLinkServiceImpl extends ServiceImpl<ShortLinkMapper, ShortLink
                 .validDate(requestParam.getValidDate())
                 .createType(requestParam.getCreateType())
                 .validDateType(requestParam.getValidDateType())
+                .favicon(getFavicon(requestParam.getOriginUrl()))
                 .enableStatus(0)
                 .build();
 
@@ -105,6 +111,24 @@ public class ShortLinkServiceImpl extends ServiceImpl<ShortLinkMapper, ShortLink
                 .gid(requestParam.getGid())
                 .build();
     }
+
+    @SneakyThrows
+    private String getFavicon(String url){
+        URL targetUrl = new URL(url);
+        HttpURLConnection connection = (HttpURLConnection) targetUrl.openConnection();
+        connection.setRequestMethod("GET");
+        connection.connect();
+        int responseCode = connection.getResponseCode();
+        if (responseCode==HttpURLConnection.HTTP_OK){
+            Document document = Jsoup.connect(url).get();
+            Element first = document.select("Link[rel~=(?i)^(shortcut )?icon]").first();
+            if (first != null){
+                return first.attr("abs:href");
+            }
+        }
+        return null;
+    }
+
 
     @Override
     public IPage<ShortLinkPageRespDTO> pageShortLink(ShortLinkPageReqDTO requestParam) {
@@ -231,7 +255,7 @@ public class ShortLinkServiceImpl extends ServiceImpl<ShortLinkMapper, ShortLink
         }
     }
 
-    public String generateShortUrl(ShortLinkCreateReqDTO requestParam) {
+    private String generateShortUrl(ShortLinkCreateReqDTO requestParam) {
         int cnt = 0;
         String originUrl = requestParam.getOriginUrl();
         String shortUrl;
