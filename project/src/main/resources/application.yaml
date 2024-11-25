@@ -12,3 +12,8 @@ spring:
       host: 1.92.72.62
       port: 6379
       password: hexiang123321
+
+  mvc:
+    view:
+      prefix: /templates/
+      suffix: .html

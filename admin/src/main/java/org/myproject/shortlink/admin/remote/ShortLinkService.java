@@ -41,12 +41,18 @@ public interface ShortLinkService {
         });
     }
 
+    /*
+    * 更新短连接
+    * */
     default Result<Void> update(ShortLinkUpdateReqDTO requestParam){
         String post = HttpUtil.post("http://127.0.0.1:8001/api/short-link/v1/update", JSON.toJSONString(requestParam));
         return JSON.parseObject(post, new TypeReference<>() {
         });
     }
 
+    /*
+    * 短连接计数
+    * */
     default Result<List<ShortLinkCountQueryRespDTO>> countShortLink(List<String> requestParam) {
         Map<String,Object> map = new HashMap<>();
         map.put("requestParam",requestParam);
@@ -54,4 +60,13 @@ public interface ShortLinkService {
         return JSON.parseObject(get, new TypeReference<>() {
         });
     }
+
+    /*
+    * 获取标题
+    * */
+   default Result<String> getTitle(String url){
+       String responseStr = HttpUtil.get("http://127.0.0.1:8001/api/short-link/v1/title?url=" + url);
+       return JSON.parseObject(responseStr, new TypeReference<>() {
+       });
+   }
 }

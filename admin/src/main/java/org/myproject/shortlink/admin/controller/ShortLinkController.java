@@ -9,10 +9,7 @@ import org.myproject.shortlink.admin.remote.dto.req.ShortLinkPageReqDTO;
 import org.myproject.shortlink.admin.remote.dto.req.ShortLinkUpdateReqDTO;
 import org.myproject.shortlink.admin.remote.dto.resp.ShortLinkCreateRespDTO;
 import org.myproject.shortlink.admin.remote.dto.resp.ShortLinkPageRespDTO;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 
 /*
@@ -38,5 +35,9 @@ public class ShortLinkController {
         return shortLinkService.pageShortLink(requestParam);
     }
 
+    @GetMapping("/api/short-link/admin/v1/title")
+    public Result<String> getTitle(@RequestParam("url") String url){
+        return shortLinkService.getTitle(url);
+    }
 
 }

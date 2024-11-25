@@ -22,7 +22,8 @@ public class UserTransmitFilter implements Filter {
     private final static HashSet<String> IGNORE_URL = new HashSet<>(Lists.newArrayList(
             "/api/shortlink/admin/v1/user/has-username",
             "/api/shortlink/admin/v1/user/login",
-            "/api/shortlink/admin/v1/user/register"
+            "/api/shortlink/admin/v1/user/register",
+            "/api/short-link/admin/v1/title"
     ));
 
     @Override
