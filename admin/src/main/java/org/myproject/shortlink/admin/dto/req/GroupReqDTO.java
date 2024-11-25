@@ -10,5 +10,15 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class GroupReqDTO {
+
+    /**
+    * 分组名
+    * */
     private String name;
+
+
+    /**
+    * 用户名
+    * */
+    private String username;
 }

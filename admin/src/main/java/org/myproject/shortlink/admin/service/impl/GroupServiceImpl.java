@@ -34,11 +34,11 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, GroupDO>  impleme
         String gid;
         do {
             gid = GroupIdGenerator.generateRandomString();
-        }while (hasGroupId(gid));
+        }while (hasGroupId(groupParam.getUsername(),gid));
         GroupDO groupDO = GroupDO.builder()
                 .gid(gid)
                 .sortOrder(0)
-                .username(UserContext.getUsername())
+                .username(groupParam.getUsername())
                 .name(groupParam.getName())
                 .build();
         baseMapper.insert(groupDO);
@@ -100,11 +100,11 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, GroupDO>  impleme
         );
     }
 
-    private boolean hasGroupId(String gid) {
+    private boolean hasGroupId(String username, String gid) {
         LambdaQueryWrapper<GroupDO> eq = Wrappers.lambdaQuery(GroupDO.class)
                 .eq(GroupDO::getGid, gid)
                 // 根据上下文获取用户名
-                .eq(GroupDO::getUsername, UserContext.getUsername());
+                .eq(GroupDO::getUsername, Optional.ofNullable(username).orElse(UserContext.getUsername()));
         GroupDO groupDO = baseMapper.selectOne(eq);
         return groupDO!=null;
     }

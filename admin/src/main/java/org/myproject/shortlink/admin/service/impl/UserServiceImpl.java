@@ -11,11 +11,13 @@ import org.myproject.shortlink.admin.common.convention.exception.ClientException
 import org.myproject.shortlink.admin.common.enums.UserErrorCode;
 import org.myproject.shortlink.admin.dao.entity.UserDO;
 import org.myproject.shortlink.admin.dao.mapper.UserMapper;
+import org.myproject.shortlink.admin.dto.req.GroupReqDTO;
 import org.myproject.shortlink.admin.dto.req.UserLoginReqDTO;
 import org.myproject.shortlink.admin.dto.req.UserRegisterReqDTO;
 import org.myproject.shortlink.admin.dto.req.UserUpdateReqDTO;
 import org.myproject.shortlink.admin.dto.resp.UserLoginRespDTO;
 import org.myproject.shortlink.admin.dto.resp.UserRespDTO;
+import org.myproject.shortlink.admin.service.GroupService;
 import org.myproject.shortlink.admin.service.UserService;
 import org.redisson.api.RBloomFilter;
 import org.redisson.api.RLock;
@@ -37,6 +39,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, UserDO> implements 
     private final RBloomFilter<String> userRegisterCachePenetrationBloomFilter;
     private final RedissonClient redissonClient;
     private final StringRedisTemplate stringRedisTemplate;
+    private final GroupService groupService;
 
 
     /*
@@ -79,6 +82,10 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, UserDO> implements 
                     throw new ClientException(UserErrorCode.USER_SAVE_FAILURE);
                 }
                 userRegisterCachePenetrationBloomFilter.add(registerParam.getUsername());
+                groupService.saveGroup(GroupReqDTO.builder()
+                        .name("默认分组")
+                        .username(registerParam.getUsername())
+                        .build());
                 return;
             }
             throw new ClientException(UserErrorCode.USER_NAME_EXIST);
