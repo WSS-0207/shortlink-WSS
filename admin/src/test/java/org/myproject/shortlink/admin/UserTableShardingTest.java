@@ -47,9 +47,17 @@ public class UserTableShardingTest {
             "PRIMARY KEY (`id`)," +
             "UNIQUE KEY `idx_unique_username_gid` (`gid`,`username`) USING BTREE" +
             ") ENGINE=InnoDB AUTO_INCREMENT=1859519988175044610 DEFAULT CHARSET=utf8mb4;";
+
+
+    public static final String LINK_GOTO_SQL =  "CREATE TABLE `t_link_goto_%d` (" +
+            "`id` bigint(20) NOT NULL COMMENT 'ID'," +
+            "`full_short_link` varchar(255) DEFAULT NULL COMMENT '短链接'," +
+            "`gid` varchar(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL COMMENT '分组ID'," +
+            "PRIMARY KEY (`id`) USING BTREE" +
+            ") ENGINE=InnoDB DEFAULT CHARSET=latin1 ROW_FORMAT=DYNAMIC;";
     public static void main(String[] args) {
         for (int i = 0; i < 16; i++) {
-            System.out.println(String.format(GROUP_SQL, i));
+            System.out.println(String.format(LINK_GOTO_SQL, i));
         }
     }
 }
