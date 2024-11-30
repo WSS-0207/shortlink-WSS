@@ -129,7 +129,9 @@ public class ShortLinkServiceImpl extends ServiceImpl<ShortLinkMapper, ShortLink
         return null;
     }
 
-
+    /*
+    * 分页查询短连接
+    * */
     @Override
     public IPage<ShortLinkPageRespDTO> pageShortLink(ShortLinkPageReqDTO requestParam) {
         LambdaQueryWrapper<ShortLinkDO> eq = Wrappers.lambdaQuery(ShortLinkDO.class)
@@ -237,19 +239,17 @@ public class ShortLinkServiceImpl extends ServiceImpl<ShortLinkMapper, ShortLink
                     .eq(ShortLinkDO::getEnableStatus, 0)
                     .eq(ShortLinkDO::getDelFlag, 0);
             ShortLinkDO shortLinkDO = baseMapper.selectOne(shortLinkDOQuery);
-            if (shortLinkDO != null) {
-                if (shortLinkDO.getValidDate()!=null && shortLinkDO.getValidDate().before(new Date())){
-                    stringRedisTemplate.opsForValue().set(String.format(GOTO_IS_NULL_SHORT_LINK_KEY, fullShortLink), "-", 30, TimeUnit.MINUTES);
-                    ((HttpServletResponse) response).sendRedirect("/page/notfound");
-                    return;
-                }
-                //缓存预热
-                stringRedisTemplate.opsForValue().set(
-                        String.format(GOTO_SHORT_LINK_KEY, fullShortLink),
-                        shortLinkDO.getOriginUrl(),
-                        getLinkCacheValidTime(shortLinkDO.getValidDate()),TimeUnit.MINUTES);
-                ((HttpServletResponse) response).sendRedirect(shortLinkDO.getOriginUrl());
+            if (shortLinkDO == null || shortLinkDO.getValidDate().before(new Date())) {
+                stringRedisTemplate.opsForValue().set(String.format(GOTO_IS_NULL_SHORT_LINK_KEY, fullShortLink), "-", 30, TimeUnit.MINUTES);
+                ((HttpServletResponse) response).sendRedirect("/page/notfound");
+                return;
             }
+            //缓存预热
+            stringRedisTemplate.opsForValue().set(
+                    String.format(GOTO_SHORT_LINK_KEY, fullShortLink),
+                    shortLinkDO.getOriginUrl(),
+                    getLinkCacheValidTime(shortLinkDO.getValidDate()),TimeUnit.MINUTES);
+            ((HttpServletResponse) response).sendRedirect(shortLinkDO.getOriginUrl());
         }finally {
             lock.unlock();
         }

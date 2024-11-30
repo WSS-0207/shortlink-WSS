@@ -29,6 +29,8 @@ import org.springframework.stereotype.Service;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
+import static org.myproject.shortlink.admin.common.constant.RedisCacheConstant.USER_LOGIN_KEY;
+
 /*
 * 用户接口实现层
 * */
@@ -121,7 +123,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, UserDO> implements 
         if (userDO == null){
             throw new ClientException(UserErrorCode.USER_NULL);
         }
-        Boolean hasLogin = stringRedisTemplate.hasKey("login_"+loginParam.getUsername());
+        Boolean hasLogin = stringRedisTemplate.hasKey(USER_LOGIN_KEY+loginParam.getUsername());
         if(hasLogin!=null&&hasLogin){
             throw new ClientException(UserErrorCode.USER_HAS_LOGIN);
         }
@@ -133,8 +135,8 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, UserDO> implements 
         * value: userDO(json)
         * */
         String uuid = UUID.randomUUID().toString();
-        stringRedisTemplate.opsForHash().put("login_"+loginParam.getUsername(), uuid, JSON.toJSONString(userDO));
-        stringRedisTemplate.expire("login_"+loginParam.getUsername(),30L, TimeUnit.DAYS);
+        stringRedisTemplate.opsForHash().put(USER_LOGIN_KEY+loginParam.getUsername(), uuid, JSON.toJSONString(userDO));
+        stringRedisTemplate.expire(USER_LOGIN_KEY+loginParam.getUsername(),30L, TimeUnit.DAYS);
         return new UserLoginRespDTO(uuid);
     }
 
@@ -143,7 +145,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, UserDO> implements 
     * */
     @Override
     public Boolean checkLogin(String username, String token) {
-        return stringRedisTemplate.opsForHash().get("login_" + username, token) !=null;
+        return stringRedisTemplate.opsForHash().get(USER_LOGIN_KEY + username, token) !=null;
     }
 
     /*
@@ -152,7 +154,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, UserDO> implements 
     @Override
     public void logout(String username, String token) {
         if (checkLogin(username, token)){
-            stringRedisTemplate.delete("login_"+username);
+            stringRedisTemplate.delete(USER_LOGIN_KEY+username);
             return;
         }
         throw new ClientException(UserErrorCode.USER_NOT_LOGIN);
