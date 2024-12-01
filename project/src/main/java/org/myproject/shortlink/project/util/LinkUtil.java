@@ -59,4 +59,17 @@ public class LinkUtil {
             return "Unknown";
         }
     }
+
+    /*
+    * 获取短连接访问设备
+    * @param request
+    * @return
+    * */
+    public static String getDevice(HttpServletRequest request) {
+        String userAgent = request.getHeader("User-Agent");
+        if (userAgent.contains("Mobile")) {
+            return "Mobile";
+        }
+        return "PC";
+    }
 }
