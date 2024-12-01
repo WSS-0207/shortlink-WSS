@@ -291,8 +291,10 @@ public class ShortLinkServiceImpl extends ServiceImpl<ShortLinkMapper, ShortLink
                 uvCookie.setMaxAge(60*60*24*30);
                 uvCookie.setPath(StrUtil.sub(fullShortUrl,fullShortUrl.indexOf("/"),fullShortUrl.length()));
                 ((HttpServletResponse) response).addCookie(uvCookie);
+                uvFirstFlag.set(Boolean.TRUE);
                 stringRedisTemplate.opsForSet().add("short-link:stats:uv:" + fullShortUrl, uv);
             };
+            //uv监控
             if(ArrayUtil.isNotEmpty(cookies)){
                 Arrays.stream(cookies)
                         .filter(cookie -> Objects.equals("uv", cookie.getName()))
@@ -309,7 +311,11 @@ public class ShortLinkServiceImpl extends ServiceImpl<ShortLinkMapper, ShortLink
             }else{
                 runnable.run();
             }
-
+            //ip监控
+            String remoteAddr = request.getRemoteAddr();
+            Long uipAdd = stringRedisTemplate.opsForSet()
+                    .add("short-link:stats:uip:" + fullShortUrl, remoteAddr);
+            boolean uipFirstFlag = uipAdd!=null&& uipAdd>0L;
             int hour = DateUtil.hour(new Date(), true);
             Week week = DateUtil.dayOfWeekEnum(new Date());
             int weekday = week.getValue();
@@ -319,7 +325,7 @@ public class ShortLinkServiceImpl extends ServiceImpl<ShortLinkMapper, ShortLink
                     .date(new Date())
                     .pv(1)
                     .uv(uvFirstFlag.get()?1:0)
-                    .uip(1)
+                    .uip(uipFirstFlag?1:0)
                     .hour(hour)
                     .weekday(weekday)
                     .build();
