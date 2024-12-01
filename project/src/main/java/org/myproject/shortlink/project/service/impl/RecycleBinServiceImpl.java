@@ -10,6 +10,7 @@ import lombok.RequiredArgsConstructor;
 import org.myproject.shortlink.project.dao.entity.ShortLinkDO;
 import org.myproject.shortlink.project.dao.mapper.ShortLinkMapper;
 import org.myproject.shortlink.project.dto.req.RecycleBinRecoverReqDTO;
+import org.myproject.shortlink.project.dto.req.RecycleBinRemoveReqDTO;
 import org.myproject.shortlink.project.dto.req.RecycleBinReqDTO;
 import org.myproject.shortlink.project.dto.req.ShortLinkRecycleBinPageReqDTO;
 import org.myproject.shortlink.project.dto.resp.ShortLinkPageRespDTO;
@@ -70,5 +71,15 @@ public class RecycleBinServiceImpl extends ServiceImpl<ShortLinkMapper, ShortLin
                 .build();
         baseMapper.update(shortLinkDO,eq);
         stringRedisTemplate.delete(String.format(GOTO_IS_NULL_SHORT_LINK_KEY, requestParam.getFullShortUrl()));
+    }
+
+    @Override
+    public void removeShortLink(RecycleBinRemoveReqDTO requestParam) {
+        LambdaUpdateWrapper<ShortLinkDO> eq = Wrappers.lambdaUpdate(ShortLinkDO.class)
+                .eq(ShortLinkDO::getGid, requestParam.getGid())
+                .eq(ShortLinkDO::getFullShortUrl, requestParam.getFullShortUrl())
+                .eq(ShortLinkDO::getEnableStatus, 1)
+                .eq(ShortLinkDO::getDelFlag, 0);
+        baseMapper.delete(eq);
     }
 }
