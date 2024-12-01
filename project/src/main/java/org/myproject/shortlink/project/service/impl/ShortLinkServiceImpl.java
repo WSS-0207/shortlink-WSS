@@ -28,14 +28,8 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.myproject.shortlink.project.common.convention.exception.ClientException;
 import org.myproject.shortlink.project.common.enums.VailDateTypeEnum;
-import org.myproject.shortlink.project.dao.entity.LinkAccessStatsDO;
-import org.myproject.shortlink.project.dao.entity.LinkLocaleStatsDO;
-import org.myproject.shortlink.project.dao.entity.ShortLinkDO;
-import org.myproject.shortlink.project.dao.entity.ShortLinkGotoDO;
-import org.myproject.shortlink.project.dao.mapper.LinkAccessStatsMapper;
-import org.myproject.shortlink.project.dao.mapper.LinkLocaleStatsMapper;
-import org.myproject.shortlink.project.dao.mapper.ShortLinkGotoMapper;
-import org.myproject.shortlink.project.dao.mapper.ShortLinkMapper;
+import org.myproject.shortlink.project.dao.entity.*;
+import org.myproject.shortlink.project.dao.mapper.*;
 import org.myproject.shortlink.project.dto.req.ShortLinkCreateReqDTO;
 import org.myproject.shortlink.project.dto.req.ShortLinkPageReqDTO;
 import org.myproject.shortlink.project.dto.req.ShortLinkUpdateReqDTO;
@@ -44,6 +38,7 @@ import org.myproject.shortlink.project.dto.resp.ShortLinkCreateRespDTO;
 import org.myproject.shortlink.project.dto.resp.ShortLinkPageRespDTO;
 import org.myproject.shortlink.project.service.ShortLinkService;
 import org.myproject.shortlink.project.util.HashUtil;
+import org.myproject.shortlink.project.util.LinkUtil;
 import org.redisson.api.RBloomFilter;
 import org.redisson.api.RLock;
 import org.redisson.api.RedissonClient;
@@ -74,6 +69,7 @@ public class ShortLinkServiceImpl extends ServiceImpl<ShortLinkMapper, ShortLink
     private final RedissonClient redissonClient;
     private final LinkAccessStatsMapper linkAccessStatsMapper;
     private final LinkLocaleStatsMapper linkLocaleStatsMapper;
+    private final LinkOsStatsMapper linkOsStatsMapper;
 
     @Value("${short-link.stats.locale.amap-key}")
     private String statsLocaleAmapKey;
@@ -365,6 +361,14 @@ public class ShortLinkServiceImpl extends ServiceImpl<ShortLinkMapper, ShortLink
 
                 linkLocaleStatsMapper.shortLinkLocaleStats(linkLocaleStatsDO);
             }
+            LinkOsStatsDO linkOsStatsDO = LinkOsStatsDO.builder()
+                    .fullShortUrl(fullShortUrl)
+                    .gid(gid)
+                    .date(new Date())
+                    .cnt(1)
+                    .os(LinkUtil.getOs((HttpServletRequest) request))
+                    .build();
+            linkOsStatsMapper.shortLinkOsStats(linkOsStatsDO);
         }catch (Throwable ex){
             log.error("短连接访问统计失败",ex);
         }
