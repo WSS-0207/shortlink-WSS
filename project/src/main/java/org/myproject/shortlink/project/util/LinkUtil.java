@@ -39,4 +39,24 @@ public class LinkUtil {
             return "Unknown";
         }
     }
+
+    /*
+    * 获取短连接访问浏览器
+    * @param request
+    * @return
+    * */
+    public static String getBrowser(HttpServletRequest request) {
+        String userAgent = request.getHeader("User-Agent");
+        if (userAgent.contains("Edg")) {
+            return "Edge";
+        }else if (userAgent.contains("Chrome")) {
+            return "Chrome";
+        }else if (userAgent.contains("Firefox")) {
+            return "Firefox";
+        } else if (userAgent.contains("Safari")) {
+            return "Safari";
+        } else {
+            return "Unknown";
+        }
+    }
 }

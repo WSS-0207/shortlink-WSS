@@ -3,10 +3,9 @@ package org.myproject.shortlink.project.dao.mapper;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Param;
-import org.myproject.shortlink.project.dao.entity.LinkLocaleStatsDO;
 import org.myproject.shortlink.project.dao.entity.LinkOsStatsDO;
 
-public interface LinkOsStatsMapper extends BaseMapper<LinkLocaleStatsDO> {
+public interface LinkOsStatsMapper extends BaseMapper<LinkOsStatsDO> {
 
     /*
     * 短连接地域监控

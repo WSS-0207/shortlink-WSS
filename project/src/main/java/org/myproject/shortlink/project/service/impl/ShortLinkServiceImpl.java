@@ -53,6 +53,7 @@ import java.net.URL;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 
 import static org.myproject.shortlink.project.common.constant.RedisKeyConstant.*;
 import static org.myproject.shortlink.project.common.constant.ShortLinkConstant.AMAP_REMOTE_URL;
@@ -70,6 +71,9 @@ public class ShortLinkServiceImpl extends ServiceImpl<ShortLinkMapper, ShortLink
     private final LinkAccessStatsMapper linkAccessStatsMapper;
     private final LinkLocaleStatsMapper linkLocaleStatsMapper;
     private final LinkOsStatsMapper linkOsStatsMapper;
+    private final LinkBrowserStatsMapper linkBrowserStatsMapper;
+    private final LinkAccessLogsMapper linkAccessLogsMapper;
+
 
     @Value("${short-link.stats.locale.amap-key}")
     private String statsLocaleAmapKey;
@@ -292,14 +296,15 @@ public class ShortLinkServiceImpl extends ServiceImpl<ShortLinkMapper, ShortLink
         AtomicBoolean uvFirstFlag = new AtomicBoolean();
         Cookie[] cookies = ((HttpServletRequest) request).getCookies();
         try {
+            AtomicReference<String> uv = new AtomicReference<>();
             Runnable runnable = ()->{
-                String uv = UUID.fastUUID().toString();
-                Cookie uvCookie = new Cookie("uv", uv);
+                uv.set(UUID.fastUUID().toString());
+                Cookie uvCookie = new Cookie("uv", uv.get());
                 uvCookie.setMaxAge(60*60*24*30);
                 uvCookie.setPath(StrUtil.sub(fullShortUrl,fullShortUrl.indexOf("/"),fullShortUrl.length()));
                 ((HttpServletResponse) response).addCookie(uvCookie);
                 uvFirstFlag.set(Boolean.TRUE);
-                stringRedisTemplate.opsForSet().add("short-link:stats:uv:" + fullShortUrl, uv);
+                stringRedisTemplate.opsForSet().add("short-link:stats:uv:" + fullShortUrl, uv.get());
             };
             //uv监控
             if(ArrayUtil.isNotEmpty(cookies)){
@@ -309,6 +314,7 @@ public class ShortLinkServiceImpl extends ServiceImpl<ShortLinkMapper, ShortLink
                         .map(Cookie::getValue)
                         .ifPresentOrElse(
                                 value->{
+                                    uv.set(value);
                                     Long add = stringRedisTemplate.opsForSet()
                                             .add("short-link:stats:uv:" + fullShortUrl, value);
                                     uvFirstFlag.set(add!=null&& add>0L);
@@ -361,14 +367,33 @@ public class ShortLinkServiceImpl extends ServiceImpl<ShortLinkMapper, ShortLink
 
                 linkLocaleStatsMapper.shortLinkLocaleStats(linkLocaleStatsDO);
             }
+            String os = LinkUtil.getOs((HttpServletRequest) request);
             LinkOsStatsDO linkOsStatsDO = LinkOsStatsDO.builder()
                     .fullShortUrl(fullShortUrl)
                     .gid(gid)
                     .date(new Date())
                     .cnt(1)
-                    .os(LinkUtil.getOs((HttpServletRequest) request))
+                    .os(os)
                     .build();
             linkOsStatsMapper.shortLinkOsStats(linkOsStatsDO);
+            String browser = LinkUtil.getBrowser((HttpServletRequest) request);
+            LinkBrowserStatsDO linkBrowserStatsDO = LinkBrowserStatsDO.builder()
+                    .fullShortUrl(fullShortUrl)
+                    .gid(gid)
+                    .date(new Date())
+                    .cnt(1)
+                    .browser(browser)
+                    .build();
+            linkBrowserStatsMapper.shortLinkBrowserStats(linkBrowserStatsDO);
+            LinkAccessLogsDO linkAccessLogsDO = LinkAccessLogsDO.builder()
+                    .fullShortUrl(fullShortUrl)
+                    .gid(gid)
+                    .user(uv.get())
+                    .browser(browser)
+                    .os(os)
+                    .ip(remoteAddr)
+                    .build();
+            linkAccessLogsMapper.shortLinkAccessLogs(linkAccessLogsDO);
         }catch (Throwable ex){
             log.error("短连接访问统计失败",ex);
         }
