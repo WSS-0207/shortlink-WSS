@@ -27,7 +27,6 @@ public class RecycleBinServiceImpl implements RecycleBinService {
     public Result<IPage<ShortLinkPageRespDTO>> pageRecycleShortLink(ShortLinkRecycleBinPageReqDTO requestParam) {
         System.out.println(UserContext.getUsername());
         LambdaQueryWrapper<GroupDO> eq = Wrappers.lambdaQuery(GroupDO.class)
-//                .eq(GroupDO::getUsername, "lisi")
                 .eq(GroupDO::getUsername, UserContext.getUsername())
                 .eq(GroupDO::getDelFlag, 0);
 
