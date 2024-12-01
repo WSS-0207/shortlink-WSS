@@ -72,4 +72,15 @@ public class LinkUtil {
         }
         return "PC";
     }
+
+    /*
+    * 获取短链接网络
+    * @param request
+    * @return
+    * */
+    public static String getNetwork(HttpServletRequest request) {
+        String remoteAddr = request.getRemoteAddr();
+
+        return remoteAddr.startsWith("192.168.") || remoteAddr.startsWith("10.") ? "WIFI" : "Mobile";
+    }
 }

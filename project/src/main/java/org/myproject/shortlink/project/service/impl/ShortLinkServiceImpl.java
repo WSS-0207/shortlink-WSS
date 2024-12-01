@@ -74,6 +74,7 @@ public class ShortLinkServiceImpl extends ServiceImpl<ShortLinkMapper, ShortLink
     private final LinkBrowserStatsMapper linkBrowserStatsMapper;
     private final LinkAccessLogsMapper linkAccessLogsMapper;
     private final LinkDeviceStatsMapper linkDeviceStatsMapper;
+    private final LinkNetworkStatsMapper linkNetworkStatsMapper;
 
 
 
@@ -405,6 +406,14 @@ public class ShortLinkServiceImpl extends ServiceImpl<ShortLinkMapper, ShortLink
                     .device(LinkUtil.getDevice((HttpServletRequest) request))
                     .build();
             linkDeviceStatsMapper.shortLinkDeviceStats(linkDeviceStatsDO);
+            LinkNetworkStatsDO linkNetworkStatsDO = LinkNetworkStatsDO.builder()
+                    .fullShortUrl(fullShortUrl)
+                    .gid(gid)
+                    .date(new Date())
+                    .cnt(1)
+                    .network(LinkUtil.getNetwork((HttpServletRequest) request))
+                    .build();
+            linkNetworkStatsMapper.shortLinkNetworkStats(linkNetworkStatsDO);
         }catch (Throwable ex){
             log.error("短连接访问统计失败",ex);
         }
