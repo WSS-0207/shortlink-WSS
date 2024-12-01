@@ -8,6 +8,8 @@ import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import lombok.RequiredArgsConstructor;
 import org.myproject.shortlink.project.dao.entity.ShortLinkDO;
+import org.myproject.shortlink.project.dao.entity.ShortLinkGotoDO;
+import org.myproject.shortlink.project.dao.mapper.ShortLinkGotoMapper;
 import org.myproject.shortlink.project.dao.mapper.ShortLinkMapper;
 import org.myproject.shortlink.project.dto.req.RecycleBinRecoverReqDTO;
 import org.myproject.shortlink.project.dto.req.RecycleBinRemoveReqDTO;
@@ -18,6 +20,8 @@ import org.myproject.shortlink.project.service.RecycleBinService;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
+import java.util.concurrent.TimeUnit;
+
 import static org.myproject.shortlink.project.common.constant.RedisKeyConstant.GOTO_IS_NULL_SHORT_LINK_KEY;
 import static org.myproject.shortlink.project.common.constant.RedisKeyConstant.GOTO_SHORT_LINK_KEY;
 
@@ -26,6 +30,7 @@ import static org.myproject.shortlink.project.common.constant.RedisKeyConstant.G
 public class RecycleBinServiceImpl extends ServiceImpl<ShortLinkMapper, ShortLinkDO> implements RecycleBinService {
 
     private final StringRedisTemplate stringRedisTemplate;
+    private final ShortLinkGotoMapper shortLinkGotoMapper;
     @Override
     public void recycleShortLink(RecycleBinReqDTO requestParam) {
         LambdaUpdateWrapper<ShortLinkDO> eq = Wrappers.lambdaUpdate(ShortLinkDO.class)
@@ -39,6 +44,7 @@ public class RecycleBinServiceImpl extends ServiceImpl<ShortLinkMapper, ShortLin
         baseMapper.update(shortLinkDO,eq);
         //缓存预热
         stringRedisTemplate.delete(String.format(GOTO_SHORT_LINK_KEY, requestParam.getFullShortUrl()));
+        stringRedisTemplate.opsForValue().set(String.format(GOTO_IS_NULL_SHORT_LINK_KEY, requestParam.getFullShortUrl()), "-", 30, TimeUnit.MINUTES);
     }
 
     /*
@@ -80,6 +86,8 @@ public class RecycleBinServiceImpl extends ServiceImpl<ShortLinkMapper, ShortLin
                 .eq(ShortLinkDO::getFullShortUrl, requestParam.getFullShortUrl())
                 .eq(ShortLinkDO::getEnableStatus, 1)
                 .eq(ShortLinkDO::getDelFlag, 0);
+        LambdaQueryWrapper<ShortLinkGotoDO> gotoMapper = Wrappers.lambdaQuery(ShortLinkGotoDO.class).eq(ShortLinkGotoDO::getFullShortLink, requestParam.getFullShortUrl());
+        shortLinkGotoMapper.delete(gotoMapper);
         baseMapper.delete(eq);
     }
 }
