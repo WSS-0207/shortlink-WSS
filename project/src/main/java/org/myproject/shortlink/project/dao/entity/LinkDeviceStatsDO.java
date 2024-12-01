@@ -41,7 +41,7 @@ public class LinkDeviceStatsDO extends BaseDO {
     private Integer cnt;
 
     /**
-    * 浏览器
+    * 设备
     * */
     private String device;
 }
