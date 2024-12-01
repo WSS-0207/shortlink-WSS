@@ -197,34 +197,43 @@ public class ShortLinkServiceImpl extends ServiceImpl<ShortLinkMapper, ShortLink
         }
     }
 
+    /*
+    * 短连接跳转
+    * */
     @SneakyThrows
     @Override
     public void restoreUrl(String shortLink, ServletRequest request, ServletResponse response) throws IOException {
         String serverName = request.getServerName();
         String fullShortLink = serverName + "/" + shortLink;
+        // 查询redis缓存
         String originalLink = stringRedisTemplate.opsForValue().get(String.format(GOTO_SHORT_LINK_KEY, fullShortLink));
         if (StrUtil.isNotBlank(originalLink)) {
             ((HttpServletResponse) response).sendRedirect(originalLink);
             return;
         }
+        //查询布隆过滤器
         boolean contains = shortLinkCachePenetrationBloomFilter.contains(fullShortLink);
         if (!contains) {
             ((HttpServletResponse) response).sendRedirect("/page/notfound");
             return;
         }
+        //查询redis中的空值
         originalLink = stringRedisTemplate.opsForValue().get(String.format(GOTO_IS_NULL_SHORT_LINK_KEY, fullShortLink));
         if (StrUtil.isNotBlank(originalLink)) {
             ((HttpServletResponse) response).sendRedirect("/page/notfound");
             return;
         }
+        //加锁
         RLock lock = redissonClient.getLock(String.format(LOCK_GOTO_SHORT_LINK_KEY, fullShortLink));
         lock.lock();
         try {
+            //双重锁，查询redis缓存
             originalLink = stringRedisTemplate.opsForValue().get(String.format(GOTO_SHORT_LINK_KEY, fullShortLink));
             if (StrUtil.isNotBlank(originalLink)) {
                 ((HttpServletResponse) response).sendRedirect(originalLink);
                 return;
             }
+            //缓存穿透，查询路由表
             LambdaQueryWrapper<ShortLinkGotoDO> eq = Wrappers.lambdaQuery(ShortLinkGotoDO.class)
                     .eq(ShortLinkGotoDO::getFullShortLink, fullShortLink);
             ShortLinkGotoDO shortLinkGotoDO = shortLinkGotoMapper.selectOne(eq);
@@ -233,13 +242,15 @@ public class ShortLinkServiceImpl extends ServiceImpl<ShortLinkMapper, ShortLink
                 ((HttpServletResponse) response).sendRedirect("/page/notfound");
                 return;
             }
+            //查询数据库
             LambdaQueryWrapper<ShortLinkDO> shortLinkDOQuery = Wrappers.lambdaQuery(ShortLinkDO.class)
                     .eq(ShortLinkDO::getGid, shortLinkGotoDO.getGid())
                     .eq(ShortLinkDO::getFullShortUrl, fullShortLink)
                     .eq(ShortLinkDO::getEnableStatus, 0)
                     .eq(ShortLinkDO::getDelFlag, 0);
             ShortLinkDO shortLinkDO = baseMapper.selectOne(shortLinkDOQuery);
-            if (shortLinkDO == null || shortLinkDO.getValidDate().before(new Date())) {
+            //查询数据库，短连接已失效
+            if (shortLinkDO == null || (shortLinkDO.getValidDate()!=null && shortLinkDO.getValidDate().before(new Date()))) {
                 stringRedisTemplate.opsForValue().set(String.format(GOTO_IS_NULL_SHORT_LINK_KEY, fullShortLink), "-", 30, TimeUnit.MINUTES);
                 ((HttpServletResponse) response).sendRedirect("/page/notfound");
                 return;
