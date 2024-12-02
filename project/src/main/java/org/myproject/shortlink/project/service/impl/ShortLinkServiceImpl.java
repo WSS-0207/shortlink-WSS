@@ -355,6 +355,8 @@ public class ShortLinkServiceImpl extends ServiceImpl<ShortLinkMapper, ShortLink
             String localeResult = HttpUtil.get(AMAP_REMOTE_URL, map);
             JSONObject localeObject = JSON.parseObject(localeResult);
             String infocode = localeObject.getString("infocode");
+            String actualProvince;
+            String actualCity;
             if(StrUtil.isNotBlank(infocode)&&StrUtil.equals(infocode, "10000")){
                 String province = localeObject.getString("province");
                 boolean unknownFlag = StrUtil.equals(province,"[]");
@@ -363,57 +365,61 @@ public class ShortLinkServiceImpl extends ServiceImpl<ShortLinkMapper, ShortLink
                         .gid(gid)
                         .date(new Date())
                         .cnt(1)
-                        .province(unknownFlag?"unknown" : province)
-                        .city(unknownFlag?"unknown" : localeObject.getString("city"))
+                        .province(actualProvince = unknownFlag?"unknown" : province)
+                        .city(actualCity = unknownFlag?"unknown" : localeObject.getString("city"))
                         .adcode(unknownFlag?"unknown" : localeObject.getString("adcode"))
                         .country(unknownFlag?"China" : localeObject.getString("country"))
                         .build();
-
                 linkLocaleStatsMapper.shortLinkLocaleStats(linkLocaleStatsDO);
+                String os = LinkUtil.getOs((HttpServletRequest) request);
+                LinkOsStatsDO linkOsStatsDO = LinkOsStatsDO.builder()
+                        .fullShortUrl(fullShortUrl)
+                        .gid(gid)
+                        .date(new Date())
+                        .cnt(1)
+                        .os(os)
+                        .build();
+                linkOsStatsMapper.shortLinkOsStats(linkOsStatsDO);
+                String browser = LinkUtil.getBrowser((HttpServletRequest) request);
+                LinkBrowserStatsDO linkBrowserStatsDO = LinkBrowserStatsDO.builder()
+                        .fullShortUrl(fullShortUrl)
+                        .gid(gid)
+                        .date(new Date())
+                        .cnt(1)
+                        .browser(browser)
+                        .build();
+                linkBrowserStatsMapper.shortLinkBrowserStats(linkBrowserStatsDO);
+                String device = LinkUtil.getDevice((HttpServletRequest) request);
+                LinkDeviceStatsDO linkDeviceStatsDO = LinkDeviceStatsDO.builder()
+                        .fullShortUrl(fullShortUrl)
+                        .gid(gid)
+                        .date(new Date())
+                        .cnt(1)
+                        .device(device)
+                        .build();
+                linkDeviceStatsMapper.shortLinkDeviceStats(linkDeviceStatsDO);
+                String network = LinkUtil.getNetwork((HttpServletRequest) request);
+                LinkNetworkStatsDO linkNetworkStatsDO = LinkNetworkStatsDO.builder()
+                        .fullShortUrl(fullShortUrl)
+                        .gid(gid)
+                        .date(new Date())
+                        .cnt(1)
+                        .network(network)
+                        .build();
+                linkNetworkStatsMapper.shortLinkNetworkStats(linkNetworkStatsDO);
+                LinkAccessLogsDO linkAccessLogsDO = LinkAccessLogsDO.builder()
+                        .fullShortUrl(fullShortUrl)
+                        .gid(gid)
+                        .user(uv.get())
+                        .browser(browser)
+                        .os(os)
+                        .ip(remoteAddr)
+                        .network(network)
+                        .device(device)
+                        .locale(StrUtil.join("-","China",actualProvince,actualCity))
+                        .build();
+                linkAccessLogsMapper.shortLinkAccessLogs(linkAccessLogsDO);
             }
-            String os = LinkUtil.getOs((HttpServletRequest) request);
-            LinkOsStatsDO linkOsStatsDO = LinkOsStatsDO.builder()
-                    .fullShortUrl(fullShortUrl)
-                    .gid(gid)
-                    .date(new Date())
-                    .cnt(1)
-                    .os(os)
-                    .build();
-            linkOsStatsMapper.shortLinkOsStats(linkOsStatsDO);
-            String browser = LinkUtil.getBrowser((HttpServletRequest) request);
-            LinkBrowserStatsDO linkBrowserStatsDO = LinkBrowserStatsDO.builder()
-                    .fullShortUrl(fullShortUrl)
-                    .gid(gid)
-                    .date(new Date())
-                    .cnt(1)
-                    .browser(browser)
-                    .build();
-            linkBrowserStatsMapper.shortLinkBrowserStats(linkBrowserStatsDO);
-            LinkAccessLogsDO linkAccessLogsDO = LinkAccessLogsDO.builder()
-                    .fullShortUrl(fullShortUrl)
-                    .gid(gid)
-                    .user(uv.get())
-                    .browser(browser)
-                    .os(os)
-                    .ip(remoteAddr)
-                    .build();
-            linkAccessLogsMapper.shortLinkAccessLogs(linkAccessLogsDO);
-            LinkDeviceStatsDO linkDeviceStatsDO = LinkDeviceStatsDO.builder()
-                    .fullShortUrl(fullShortUrl)
-                    .gid(gid)
-                    .date(new Date())
-                    .cnt(1)
-                    .device(LinkUtil.getDevice((HttpServletRequest) request))
-                    .build();
-            linkDeviceStatsMapper.shortLinkDeviceStats(linkDeviceStatsDO);
-            LinkNetworkStatsDO linkNetworkStatsDO = LinkNetworkStatsDO.builder()
-                    .fullShortUrl(fullShortUrl)
-                    .gid(gid)
-                    .date(new Date())
-                    .cnt(1)
-                    .network(LinkUtil.getNetwork((HttpServletRequest) request))
-                    .build();
-            linkNetworkStatsMapper.shortLinkNetworkStats(linkNetworkStatsDO);
         }catch (Throwable ex){
             log.error("短连接访问统计失败",ex);
         }

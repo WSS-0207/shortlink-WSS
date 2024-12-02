@@ -1,4 +1,4 @@
-package org.myproject.shortlink.admin.dto.req;
+package org.myproject.shortlink.admin.remote.dto.req;
 
 import lombok.Data;
 
