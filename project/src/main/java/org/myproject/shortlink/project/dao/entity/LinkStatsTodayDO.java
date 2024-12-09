@@ -9,7 +9,6 @@ import org.myproject.shortlink.project.common.database.BaseDO;
 
 import java.util.Date;
 
-@Data
 @TableName("t_link_stats_today")
 @Builder
 @NoArgsConstructor
@@ -32,17 +31,14 @@ public class LinkStatsTodayDO extends BaseDO {
     private Date date;
 
     /**
-     * 今日PV
      */
     private Integer todayPv;
 
     /**
-     * 今日UV
      */
     private Integer todayUv;
 
     /**
-     * 今日IP数
      */
     private Integer todayUip;
 }

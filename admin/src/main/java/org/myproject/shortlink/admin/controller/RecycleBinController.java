@@ -4,7 +4,7 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import lombok.RequiredArgsConstructor;
 import org.myproject.shortlink.admin.common.convention.result.Result;
 import org.myproject.shortlink.admin.common.convention.result.Results;
-import org.myproject.shortlink.admin.dto.req.RecycleBinReqDTO;
+import org.myproject.shortlink.admin.remote.dto.req.RecycleBinReqDTO;
 import org.myproject.shortlink.admin.remote.ShortLinkService;
 import org.myproject.shortlink.admin.remote.dto.req.RecycleBinRecoverReqDTO;
 import org.myproject.shortlink.admin.remote.dto.req.RecycleBinRemoveReqDTO;
