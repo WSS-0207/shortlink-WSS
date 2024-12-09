@@ -9,6 +9,7 @@ import org.myproject.shortlink.project.common.database.BaseDO;
 
 import java.util.Date;
 
+@Data
 @TableName("t_link_stats_today")
 @Builder
 @NoArgsConstructor
