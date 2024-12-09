@@ -15,7 +15,7 @@ public class UserTableShardingTest {
             "PRIMARY KEY (`id`)" +
             ") ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;";
 
-    public static final String LINK_SQL = "CREATE TABLE `t_link_%d` (" +
+    public static final String LINK_SQL = "CREATE TABLE `t_link_total_%d` (" +
             "`id` bigint(20) NOT NULL COMMENT 'ID'," +
             "`domain` varchar(128) DEFAULT NULL," +
             "`short_url` varchar(8) DEFAULT NULL,   " +
@@ -29,6 +29,9 @@ public class UserTableShardingTest {
             "`valid_date_type` tinyint(1) DEFAULT NULL, " +
             "`valid_date` datetime DEFAULT NULL, " +
             "`describe` varchar(1024) DEFAULT NULL, " +
+            "`total_pv` int(11) DEFAULT NULL COMMENT '历史pv', " +
+            "`total_uv` int(11) DEFAULT NULL COMMENT '历史uv', " +
+            "`total_uip` int(11) DEFAULT NULL COMMENT '历史uip', " +
             "`create_time` datetime DEFAULT NULL COMMENT '创建时间', " +
             "`update_time` datetime DEFAULT NULL COMMENT '修改时间', " +
             "`del_flag` tinyint(1) DEFAULT NULL COMMENT '删除标识 0：未删除 1：已删除'," +
@@ -55,9 +58,25 @@ public class UserTableShardingTest {
             "`gid` varchar(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL COMMENT '分组ID'," +
             "PRIMARY KEY (`id`) USING BTREE" +
             ") ENGINE=InnoDB DEFAULT CHARSET=latin1 ROW_FORMAT=DYNAMIC;";
+    
+    public static final String LINK_STATS_TODAY_SQL = "CREATE TABLE `t_link_stats_today_%d` (" +
+            "  `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT 'ID'," +
+            "  `gid` varchar(32) DEFAULT 'default' COMMENT '分组标识'," +
+            "  `full_short_url` varchar(128) DEFAULT NULL COMMENT '短链接'," +
+            "  `date` date DEFAULT NULL COMMENT '日期'," +
+            "  `today_pv` int(11) DEFAULT '0' COMMENT '今日PV'," +
+            "  `today_uv` int(11) DEFAULT '0' COMMENT '今日UV'," +
+            "  `today_uip` int(11) DEFAULT '0' COMMENT '今日IP数'," +
+            "  `create_time` datetime DEFAULT NULL COMMENT '创建时间'," +
+            "  `update_time` datetime DEFAULT NULL COMMENT '修改时间'," +
+            "  `del_flag` tinyint(1) DEFAULT NULL COMMENT '删除标识 0：未删除 1：已删除'," +
+            "  PRIMARY KEY (`id`) USING BTREE," +
+            "  UNIQUE KEY `idx_unique_full-short-url` (`full_short_url`) USING BTREE" +
+            ") ENGINE=InnoDB AUTO_INCREMENT=284 DEFAULT CHARSET=utf8mb4 ROW_FORMAT=DYNAMIC;";
     public static void main(String[] args) {
         for (int i = 0; i < 16; i++) {
-            System.out.println(String.format(LINK_GOTO_SQL, i));
+            System.out.printf((LINK_STATS_TODAY_SQL), (Integer)i);
+            System.out.println();
         }
     }
 }

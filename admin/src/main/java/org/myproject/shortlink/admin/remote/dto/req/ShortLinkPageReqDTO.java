@@ -6,4 +6,9 @@ import lombok.Data;
 @Data
 public class ShortLinkPageReqDTO extends Page{
     private String gid;
+
+    /**
+    * 根据标签排序
+    * */
+    private String orderByTag;
 }
