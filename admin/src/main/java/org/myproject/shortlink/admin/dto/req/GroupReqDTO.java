@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.myproject.shortlink.admin.common.biz.user.UserContext;
 
 @Data
 @Builder
@@ -20,5 +21,5 @@ public class GroupReqDTO {
     /**
     * 用户名
     * */
-    private String username;
+    private String username = UserContext.getUsername();
 }

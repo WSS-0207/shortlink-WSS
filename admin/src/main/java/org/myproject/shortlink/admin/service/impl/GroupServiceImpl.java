@@ -24,7 +24,6 @@ import org.myproject.shortlink.admin.util.GroupIdGenerator;
 import org.redisson.api.RLock;
 import org.redisson.api.RedissonClient;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -40,8 +39,8 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, GroupDO>  impleme
     ShortLinkService shortLinkService = new ShortLinkService() {};
     private final RedissonClient redissonClient;
 
-    @Value("short-link.group.max-num")
-    private String groupMaxNum;
+    @Value("${short-link.group.max-num}")
+    private Integer groupMaxNum;
     /*
     * 新增分组
     * */
@@ -50,10 +49,12 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, GroupDO>  impleme
         RLock lock = redissonClient.getLock(String.format(LOCK_GROUP_CREATE_KEY,groupParam.getUsername()));
         lock.lock();
         try {
-            LambdaQueryWrapper<GroupDO> eq = Wrappers.lambdaQuery(GroupDO.class).eq(GroupDO::getUsername, groupParam.getUsername()).eq(GroupDO::getDelFlag, 0);
+            LambdaQueryWrapper<GroupDO> eq = Wrappers.lambdaQuery(GroupDO.class)
+                    .eq(GroupDO::getUsername, groupParam.getUsername())
+                    .eq(GroupDO::getDelFlag, 0);
             List<GroupDO> groupDOS = baseMapper.selectList(eq);
-            if(CollUtil.isNotEmpty(groupDOS)&&groupDOS.size()>=Integer.parseInt(groupMaxNum)){
-                throw new ClientException(String.format("分组超过最大创建数： %d", Integer.parseInt(groupMaxNum)));
+            if(CollUtil.isNotEmpty(groupDOS)&&groupDOS.size()>=groupMaxNum){
+                throw new ClientException(String.format("分组超过最大创建数： %d", groupMaxNum));
             }
 
             String gid;

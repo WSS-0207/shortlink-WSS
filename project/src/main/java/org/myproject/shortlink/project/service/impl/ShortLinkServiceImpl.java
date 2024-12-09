@@ -454,7 +454,7 @@ public class ShortLinkServiceImpl extends ServiceImpl<ShortLinkMapper, ShortLink
                 throw new ClientException("短连接生成频繁，请稍后再试");
             }
             shortUrl = HashUtil.hashToBase62(originUrl + System.currentTimeMillis());
-            if (!shortLinkCachePenetrationBloomFilter.contains(requestParam.getDomain() + "/" + shortUrl)) {
+            if (!shortLinkCachePenetrationBloomFilter.contains(createShortLinkDefaultDomain + "/" + shortUrl)) {
                 break;
             }
             cnt++;
