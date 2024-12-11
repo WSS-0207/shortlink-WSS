@@ -1,6 +1,8 @@
 package org.myproject.shortlink.admin.config;
 
+import org.myproject.shortlink.admin.common.biz.user.UserFlowRiskControlFilter;
 import org.myproject.shortlink.admin.common.biz.user.UserTransmitFilter;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -21,6 +23,18 @@ public class UserConfiguration {
         registration.setFilter(new UserTransmitFilter(stringRedisTemplate));
         registration.addUrlPatterns("/*");
         registration.setOrder(0);
+        return registration;
+    }
+
+    @Bean
+    public FilterRegistrationBean<UserFlowRiskControlFilter> globalUserFlowRiskControlFilter(
+            StringRedisTemplate stringRedisTemplate,
+            @Value("${short-link.flow-limit.time-window}") String timeWindow,
+            @Value("${short-link.flow-limit.max-access-count}") Long maxAccessCount) {
+        FilterRegistrationBean<UserFlowRiskControlFilter> registration = new FilterRegistrationBean<>();
+        registration.setFilter(new UserFlowRiskControlFilter(stringRedisTemplate,timeWindow,maxAccessCount));
+        registration.addUrlPatterns("/*");
+        registration.setOrder(10);
         return registration;
     }
 }

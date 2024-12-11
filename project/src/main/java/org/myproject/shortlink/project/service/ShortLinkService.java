@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.extension.service.IService;
 import jakarta.servlet.ServletRequest;
 import jakarta.servlet.ServletResponse;
 import org.myproject.shortlink.project.dao.entity.ShortLinkDO;
+import org.myproject.shortlink.project.dto.biz.ShortLinkStatsRecordDTO;
 import org.myproject.shortlink.project.dto.req.ShortLinkCreateReqDTO;
 import org.myproject.shortlink.project.dto.req.ShortLinkPageReqDTO;
 import org.myproject.shortlink.project.dto.req.ShortLinkUpdateReqDTO;
@@ -40,4 +41,6 @@ public interface ShortLinkService extends IService<ShortLinkDO> {
     * 缓存穿透
     * */
     void restoreUrl(String shortLink, ServletRequest request, ServletResponse response) throws IOException;
+
+    void shortLinkStats(String fullShortUrl, String gid, ShortLinkStatsRecordDTO statsRecord);
 }

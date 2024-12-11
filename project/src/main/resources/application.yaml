@@ -12,11 +12,28 @@ spring:
       host: 1.92.72.62
       port: 6379
       password: hexiang123321
+      channel-topic:
+        short-link-stats: "short_link:stats-stream"
+        short-link-stats-group: "short_link:stats-stream:only-group"
+
 
   mvc:
     view:
       prefix: /templates/
       suffix: .html
+
+  sentinel:
+    transport:
+      dashboard: localhost:8686
+      port: 8719
+
+
+  cloud:
+    nacos:
+      discovery:
+        server-addr: 1.92.72.62:8848
+        username: nacos
+        password: nacos
 
 short-link:
   domain:
